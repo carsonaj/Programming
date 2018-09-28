@@ -1,0 +1,23 @@
+import torch
+
+class NNet(torch.nn.Module):
+    
+    def __init__(self, layer_shapes, activation_functions):
+        super(NNet, self).__init__()
+        assert len(layer_shapes) == len(activation_functions) + 1
+        self.layer_shapes = layer_shapes
+        self.activation_functions = activation_functions
+        linear_functions = list()
+        
+        for i in range(len(self.layer_shapes)-1):
+            linear_functions.append(torch.nn.Linear(
+                    self.layer_shapes[i], self.layer_shapes[i+1]))
+            
+        self.linear_functions = linear_functions
+
+    def forward(self, x):
+        assert x.shape == self.layer_shapes[0]
+        y = x
+        for i in range(len(self.layer_shapes)-1):
+            y = self.activation_functions[i](self.linear_functions[i](y))
+        return y
