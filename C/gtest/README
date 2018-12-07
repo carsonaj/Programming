@@ -1,0 +1,11 @@
+
+
+here is the g test library and i have a make file so you can see the commands that i run in the command line 
+also SAMPLE is just an example class or library that i want to test the functionality 
+and in the run tests i list the tests that i want to do and the function that i want to test and you can add some tests and stuff but i would create a folder inside of you C and add a test file for each class basicly right next to them 
+and i can show you how to write a script that will help fix that or run it .
+
+
+
+
+
