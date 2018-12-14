@@ -8,6 +8,7 @@ int min(double a, double b) {
         return a;
     else
         return b;
+}
 //----------------------------------------------------------------------------
 
 // array
@@ -18,8 +19,13 @@ void swap(double *arr, int i, int j) {
     arr[j] = temp;
 }
 
-double sum(double *arr) {
+double sum(double *arr, int size) {
     double sum = 0;
+    for(int i = 0 ; i < size; i++)
+    {
+        sum += arr[i];
+    }
+    return sum;
 }
 
 // merge-sort an array
@@ -168,19 +174,19 @@ Matrix *new_matrix(int rows, int cols) {
         mat->data[i] = 0;
     }
 
-    return matrix;
+    return mat;
 }
 
 double get_element(Matrix *mat, int row, int col) {
-    return mat.data[row*(mat->cols) + col];
+    return mat->data[row*(mat->cols) + col];
 }
 
 void set_element(Matrix *mat, int row, int col, double element) {
-    mat.data[row*(mat->cols) + col] = element;
+    mat->data[row*(mat->cols) + col] = element;
 }
 
 Matrix *product(Matrix *A, Matrix *B) {
-    assert(A->cols == B->rows);
+    //assert(A->cols == B->rows);
     int m,n,p;
     m = A->rows;
     n = A->cols;
@@ -197,7 +203,7 @@ Matrix *product(Matrix *A, Matrix *B) {
                 kron_prod[k] = get_element(A, i, k)*get_element(B, k, j);
             }
 
-            element = sum(kron_prod);
+            double element = sum(kron_prod,n);
             set_element(mat, i, j, element);
         }
     }
@@ -205,9 +211,9 @@ Matrix *product(Matrix *A, Matrix *B) {
     return mat;
 }
 
-Matrix *sum(Matrix *A, MAtrix *B) {
-    assert(A->rows == B->rows);
-    assert(A->cols == B->cols);
+Matrix *matrixSum(Matrix *A, Matrix *B) {
+    //assert(A->rows == B->rows);
+    //assert(A->cols == B->cols);
     int m = A->cols;
     int n = B->cols;
 
@@ -215,7 +221,7 @@ Matrix *sum(Matrix *A, MAtrix *B) {
     int i,j;
     for (i=0; i<m; i=i+1) {
         for (j=0; j<n; j=j+1) {
-            element = get_element(A, i, j) + get_element(B, i, j);
+            double element = get_element(A, i, j) + get_element(B, i, j);
             set_element(mat, i, j, element);
         }
     }
