@@ -162,12 +162,12 @@ int binary_search(double *arr, int l, int r, int x) {
 // matrix
 
 Matrix *new_matrix(int rows, int cols) {
-    Matrix *mat = malloc(sizeof(Matrix));
+    Matrix *mat = (Matrix *) malloc(sizeof(Matrix));
     mat->rows = rows;
     mat->cols = cols;
 
     int length = rows*cols;
-    mat->data = malloc(length*sizeof(double));
+    mat->data = (double *) malloc(length*sizeof(double));
 
     int i;
     for (i=0; i<length; i=i+1) {
