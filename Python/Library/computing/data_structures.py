@@ -110,16 +110,18 @@ class Deque:
         return len(self.items)
 
 #-----------------------------------------------------------------
-# node/tree/forest data structure for trees
+# node data structure for trees
 class Node:
-    def __init__(self, data=None, parent=None):
+    def __init__(self, data=None, parent=None, children=[]):
         if parent is None:
             self._parent = self
         else:
             assert isinstance(parent, Node)
             self._parent = parent
         self._data = data
-        self._children = []
+        assert isinstance(children, list)
+        assert all([isinstance(x, Node) and x.parent == self for x in children])
+        self._children = children
         if parent is not None:
             parent.add_child(self)
 
