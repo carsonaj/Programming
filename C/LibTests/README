@@ -1,0 +1,2 @@
+run this command
+g++ -std=c++11 -pthread -I../gtest/ -I../ -I../Library/computing/ ../Library/computing/array.c arrayTest.c ../gtest/gtest-all.cc -o runTests.o
