@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
+#include <assert.h>
 #include "matrix.h"
 #include "array.h"
 
@@ -117,7 +118,7 @@ bool mat_equal(Matrix *A, Matrix *B) {
     int rows = A->rows;
     int cols = A->cols;
     int i;
-    for (i=0, i<rows*cols, i=i+1) {
+    for (i=0; i<rows*cols; i=i+1) {
         if (A->data[i] != B->data[i])
             return false;
     }
@@ -143,7 +144,7 @@ Matrix *mat_product(Matrix *A, Matrix *B) {
                 kron_prod[k] = mat_get_element(A, i, k)*mat_get_element(B, k, j);
             }
 
-            double element = arr_sum(kron_prod);
+            double element = arr_sum(kron_prod, n);
             mat_set_element(mat, i, j, element);
         }
     }
@@ -161,7 +162,7 @@ Matrix *mat_sum(Matrix *A, Matrix *B) {
     int i,j;
     for (i=0; i<m; i=i+1) {
         for (j=0; j<n; j=j+1) {
-            element = mat_get_element(A, i, j) + mat_get_element(B, i, j);
+            double element = mat_get_element(A, i, j) + mat_get_element(B, i, j);
             mat_set_element(mat, i, j, element);
         }
     }
