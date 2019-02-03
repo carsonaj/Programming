@@ -113,7 +113,6 @@ bool equal(Matrix *A, Matrix *B) {
         return false;
     }
 
-    int rows, cols;
     int rows = A->rows;
     int cols = A->cols;
     int i;
@@ -159,7 +158,7 @@ Matrix *sum(Matrix *A, Matrix *B) {
     int m = A->cols;
     int n = B->cols;
 
-    Matrix *mat = new_matrix(m,n);
+    Matrix *mat = new_matrix(m, n);
     int i,j;
     for (i=0; i<m; i=i+1) {
         for (j=0; j<n; j=j+1) {
@@ -177,9 +176,87 @@ Matrix *sum(Matrix *A, Matrix *B) {
 // algorithms
 
 // row echelon form
+void sub_ref(Matrix *mat, int start_row, int start_col) {
+
+    // check if mat is zero matrix
+    int rows = mat->rows;
+    int cols = mat->cols;
+    bool val = true;
+    double element;
+    int row = start_row;
+    int col = start_col;
+    while (col<cols) {
+        while (row<rows) {
+            element = get_element(mat, row, col);
+            if (element != 0) {
+                val = false;
+                break;
+            }
+            row = row+1;
+        }
+        if (!val)
+            break;
+        col = col+1;
+    }
+    if (val)
+        return;
+
+    // row operations to creat a pivot of 1 and zeros below pivot
+    row_op2(mat, row, 1.0/element);
+    row_op1(mat, start_row, row);
+    row = row+1;
+    while (row<rows) {
+        double k = -get_element(mat, row, col);
+        row_op3(mat, row, start_row, k);
+    }
+    // recursive call on submatrix down-right from pivot
+    sub_ref(mat, start_row+1, col+1);
+}
+
 void ref(Matrix *mat) {
-    
+    sub_ref(mat, 0, 0);
 }
 
 // reduced row echelon form
-void rref(Matrix *mat)
+void sub_rref(Matrix *mat, int start_row, int start_col) {
+    // assume matrix is in row echelon form
+    // check if mat is zero matrix
+    int rows = mat->rows;
+    int cols = mat->cols;
+    bool val = true;
+    double element;
+    int row = start_row;
+    int col = start_col;
+    while (col<cols) {
+        while (row<rows) {
+            element = get_element(mat, row, col);
+            if (element != 0) {
+                val = false;
+                break;
+            }
+            row = row+1;
+        }
+        if (!val)
+            break;
+        col = col+1;
+    }
+    if (val)
+        return;
+
+    // now (row, col) is the pivot
+    int prev_row = row-1;
+    element = -get_element(mat, prev_row, col);
+    while (0<=prev_row) {
+        if (element != 0)
+            row_op3(mat, prev_row, row, element);
+    }
+
+    row = row+1;
+    col = col+1;
+    sub_ref(mat, row, col);
+}
+
+void rref(Matrix *mat) {
+    ref(mat);
+    sub_ref(mat, 0, 0);
+}

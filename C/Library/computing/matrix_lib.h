@@ -25,4 +25,7 @@ Matrix *product(Matrix *A, Matrix *B);
 Matrix *sum(Matrix *A, Matrix *B);
 
 // algorithms
+void sub_ref(Matrix *mat, int start_row, int start_col);
+void ref(Matrix *mat);
+void sub_rref(Matrix *mat, int start_row, int start_col);
 void rref(Matrix *mat);
