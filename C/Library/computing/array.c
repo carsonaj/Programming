@@ -8,6 +8,7 @@ static int min(double a, double b) {
         return a;
     else
         return b;
+}
 //----------------------------------------------------------------------------
 
 // array algorithms
