@@ -1,31 +1,35 @@
 #include <stdlib.h>
 #include <stdbool.h>
-#include "array_lib.h"
+#include "array.h"
 
 // helpful functions
-int min(double a, double b) {
+static int min(double a, double b) {
     if (a < b)
         return a;
     else
         return b;
 //----------------------------------------------------------------------------
 
-// array
+// array algorithms
 
-void swap(double *arr, int i, int j) {
+void arr_swap(double *arr, int i, int j) {
     int temp = arr[i];
     arr[i] = arr[j];
     arr[j] = temp;
 }
 
-double sum(double *arr) {
+double arr_sum(double *arr, int length) {
     double sum = 0;
+    int i;
+    for (i=0; i<length; i=i+1)
+        sum = sum + arr[i];
+    return sum;
 }
 
 // merge-sort an array
 
 // merge two sorted subarrays arr[l,l+1,...m] arr[m+1,m+2,...,r]
-void merge(double *arr, int l, int m, int r) {
+static void merge(double *arr, int l, int m, int r) {
     int i, j, k;
     int n1 = m-l+1;
     int n2 = r-m;
@@ -70,11 +74,11 @@ void merge(double *arr, int l, int m, int r) {
     }
 }
 
-void merge_sort(double *arr, int l, int r) {
+void arr_merge_sort(double *arr, int l, int r) {
     if (l < r) {
         int m = l + (r-l)/2;
-        merge_sort(arr, l, m);
-        merge_sort(arr, m+1, r);
+        arr_merge_sort(arr, l, m);
+        arr_merge_sort(arr, m+1, r);
 
         merge(arr, l, m, r);
     }
@@ -83,7 +87,7 @@ void merge_sort(double *arr, int l, int r) {
 //quick-sort an array
 
 // parttion arr with pivot as last element
-Tuple partition(double *arr, int l, int r) {
+static Tuple partition(double *arr, int l, int r) {
     int i = l, j = l, k = 0;
     while (j < r-k) {
         if (arr[j] == arr[r-k]) {
@@ -92,13 +96,13 @@ Tuple partition(double *arr, int l, int r) {
                 continue;
             }
             else {
-                swap(arr, j, r-k-1);
+                arr_swap(arr, j, r-k-1);
                 k = k+1;
             }
         }
         if (arr[j] < arr[r-k]) {
             if (i != j)
-                swap(arr, i, j);
+                arr_swap(arr, i, j);
             i = i+1;
         }
         j = j+1;
@@ -106,7 +110,7 @@ Tuple partition(double *arr, int l, int r) {
 
     int n, m = min(j-i-1, k);
     for (n=0; n<=m; n=n+1)
-        swap(arr, i+n, r-n);
+        arr_swap(arr, i+n, r-n);
 
         Tuple x;
     if (k < r-l) {
@@ -121,11 +125,11 @@ Tuple partition(double *arr, int l, int r) {
     return x;
 }
 
-void quick_sort(double *arr, int l, int r) {
+void arr_quick_sort(double *arr, int l, int r) {
     if (l < r) {
         Tuple x = partition(arr, l, r);
-        quick_sort(arr, l, x.values[0]);
-        quick_sort(arr, x.values[1], r);
+        arr_quick_sort(arr, l, x.values[0]);
+        arr_quick_sort(arr, x.values[1], r);
     }
 }
 
@@ -133,16 +137,16 @@ void quick_sort(double *arr, int l, int r) {
 
 //search
 
-int binary_search(double *arr, int l, int r, int x) {
+int arr_binary_search(double *arr, int l, int r, int x) {
     if (r > l) {
         int m = l + (r-l)/2;
 
         if (arr[m] == x)
             return m;
         else if (arr[m]<x)
-            return binary_search(arr, m+1, r, x);
+            return arr_binary_search(arr, m+1, r, x);
         else
-            return binary_search(arr, l, m, x);
+            return arr_binary_search(arr, l, m, x);
     }
     else {
         if (arr[l] == x)
