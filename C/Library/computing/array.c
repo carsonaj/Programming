@@ -13,7 +13,13 @@ static int min(double a, double b) {
 
 // array algorithms
 
-void arr_swap(double *arr, int i, int j) {
+void arr_dubswap(double *arr, int i, int j) {
+    int temp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = temp;
+}
+
+void arr_intswap(int *arr, int i, int j) {
     int temp = arr[i];
     arr[i] = arr[j];
     arr[j] = temp;
@@ -86,6 +92,11 @@ void arr_merge_sort(double *arr, int l, int r) {
 }
 
 //quick-sort an array
+typedef struct Tuple_ Tuple;
+
+struct Tuple_ {
+    int values[2];
+};
 
 // parttion arr with pivot as last element
 static Tuple partition(double *arr, int l, int r) {

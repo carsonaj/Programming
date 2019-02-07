@@ -1,14 +1,14 @@
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
-#include "matrix.h"
 #include "array.h"
-
+#include "matrix.h"
 
 // zero indexed matrix library
 
 
-// structure
+// data structure
 Matrix *mat_create_matrix(int rows, int cols, bool zeros) {
     Matrix *mat = malloc(sizeof(Matrix));
     mat->rows = rows;
@@ -40,40 +40,75 @@ void mat_set_element(Matrix *mat, int row, int col, double element) {
     mat->data[row*(mat->cols) + col] = element;
 }
 
-Matrix *mat_get_row(Matrix *mat, int row) {
-    int rows = 1;
+Matrix *mat_get_rows(Matrix *mat, int rows, int *rows_arr) {
     int cols = mat->cols;
     Matrix *row_mat = mat_create_matrix(rows, cols, false);
 
-    int j;
-    for (j=0; j<cols; j=j+1) {
-        double element = mat_get_element(mat, row, j);
-        mat_set_element(row_mat, 0, j, element);
+    int i, j;
+    for (i=0; i<rows; i++) {
+        for (j=0; j<cols; j++) {
+            double element = mat_get_element(mat, rows_arr[i], j);
+            mat_set_element(row_mat, i, j, element);
+        }
     }
 
     return row_mat;
 }
 
-Matrix *mat_get_col(Matrix *mat, int col) {
+Matrix *mat_get_cols(Matrix *mat, int cols, int *cols_arr) {
     int rows = mat->rows;
-    int cols = 1;
     Matrix *col_mat = mat_create_matrix(rows, cols, false);
 
-    int i;
-    for (i=0; i<rows; i=i+1) {
-        double element = mat_get_element(mat, i, col);
-        mat_set_element(col_mat, i, 0, element);
+    int i, j;
+    for (j=0; j<cols; j++) {
+        for (i=0; i<rows; i++) {
+            double element = mat_get_element(mat, i, cols_arr[j]);
+            mat_set_element(col_mat, i, j, element);
+        }
     }
 
     return col_mat;
 }
+
+void mat_print_matrix(Matrix *mat) {
+    int rows = mat->rows;
+    int cols = mat->cols;
+    int i, j;
+    for (i=0; i<rows; i++) {
+        for (j=0; j<cols; j++) {
+            double element = mat_get_element(mat, i, j);
+            printf("%6.2f ", element);
+        }
+        printf("\n");
+    }
+}
+
+// create a copy of a matrix in different memory
+Matrix *mat_copy_matrix(Matrix *mat) {
+    int rows = mat->rows;
+    int cols = mat->cols;
+    Matrix *cpy = mat_create_matrix(rows, cols, false);
+    int i, j;
+    for (i=0; i<rows; i++) {
+        for (j=0; j<cols; j++) {
+            double element = mat_get_element(mat, i, j);
+            mat_set_element(cpy, i, j, element);
+        }
+    }
+
+    return cpy;
+}
+//------------------------------------------------------------------------
+
+// mathematics
 
 // elementary row operations:
 
 // (type 1) swaps rows i,j
 void mat_row_op1(Matrix *mat, int i, int j) {
     int cols = mat->cols;
-    Matrix *temp_i = mat_get_row(mat, i);
+    int rows_arr[1] = {i};
+    Matrix *temp_i = mat_get_rows(mat, 1, rows_arr);
     int col;
     for (col=0; col<cols; col=col+1) {
         double element_j = mat_get_element(mat, j, col);
@@ -105,9 +140,6 @@ void mat_row_op3(Matrix *mat, int i, int j, double k) {
     }
 }
 
-//------------------------------------------------------------------------
-
-// mathematics
 bool mat_equal(Matrix *A, Matrix *B) {
     bool same_rows = (A->rows == B->rows);
     bool same_cols = (A->cols == B->cols);
@@ -126,6 +158,7 @@ bool mat_equal(Matrix *A, Matrix *B) {
     return true;
 }
 
+// standard matrix product
 Matrix *mat_product(Matrix *A, Matrix *B) {
     assert(A->cols == B->rows);
     int m,n,p;
@@ -152,6 +185,42 @@ Matrix *mat_product(Matrix *A, Matrix *B) {
     return mat;
 }
 
+// Hadamard product
+Matrix *mat_had_product(Matrix *A, Matrix *B) {
+    assert(A->rows == B->rows);
+    assert(A->cols == B->cols);
+
+    int rows = A->rows;
+    int cols = A->cols;
+
+    Matrix *prod = mat_create_matrix(rows, cols, false);
+    int i, j;
+    for (i=0; i<rows; i++) {
+        for (j=0; j<cols; j++) {
+            double element = mat_get_element(A, i, j)*mat_get_element(B, i, j);
+            mat_set_element(prod, i, j, element);
+        }
+    }
+
+    return prod;
+}
+
+Matrix *mat_scalar_poduct(double c, Matrix *mat) {
+    rows = mat->rows;
+    cols = mat->cols;
+    Matrix *prod = mat_create_matrix(rows, cols, false);
+
+    int i, j;
+    for (i=0; i<rows; i++) {
+        for (j=0; j<cols; j++) {
+            double element = c*mat_get_element(mat, i, j);
+            mat_set_element(prod, i, j, element);
+        }
+    }
+
+    return prod;
+}
+
 Matrix *mat_sum(Matrix *A, Matrix *B) {
     assert(A->rows == B->rows);
     assert(A->cols == B->cols);
@@ -170,6 +239,21 @@ Matrix *mat_sum(Matrix *A, Matrix *B) {
     return mat;
 }
 
+Matrix *mat_transpose(Matrix *mat) {
+    int rows = mat->rows;
+    int cols = mat->cols;
+
+    Matrix *trans = mat_create_matrix(rows, cols, false);
+    int i, j;
+    for (i=0; i<rows; i++) {
+        for (j=0; j<cols; j++) {
+            double element = mat_get_element(mat, i, j);
+            mat_set_element(trans, j, i, element);
+        }
+    }
+
+    return trans;
+}
 
 //----------------------------------------------------------------------
 
