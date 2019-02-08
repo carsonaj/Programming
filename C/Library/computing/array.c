@@ -108,13 +108,13 @@ static Tuple partition(double *arr, int l, int r) {
                 continue;
             }
             else {
-                arr_swap(arr, j, r-k-1);
+                arr_dubswap(arr, j, r-k-1);
                 k = k+1;
             }
         }
         if (arr[j] < arr[r-k]) {
             if (i != j)
-                arr_swap(arr, i, j);
+                arr_dubswap(arr, i, j);
             i = i+1;
         }
         j = j+1;
@@ -122,7 +122,7 @@ static Tuple partition(double *arr, int l, int r) {
 
     int n, m = min(j-i-1, k);
     for (n=0; n<=m; n=n+1)
-        arr_swap(arr, i+n, r-n);
+        arr_dubswap(arr, i+n, r-n);
 
         Tuple x;
     if (k < r-l) {

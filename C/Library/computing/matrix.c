@@ -206,8 +206,8 @@ Matrix *mat_had_product(Matrix *A, Matrix *B) {
 }
 
 Matrix *mat_scalar_poduct(double c, Matrix *mat) {
-    rows = mat->rows;
-    cols = mat->cols;
+    int rows = mat->rows;
+    int cols = mat->cols;
     Matrix *prod = mat_create_matrix(rows, cols, false);
 
     int i, j;
@@ -243,7 +243,7 @@ Matrix *mat_transpose(Matrix *mat) {
     int rows = mat->rows;
     int cols = mat->cols;
 
-    Matrix *trans = mat_create_matrix(rows, cols, false);
+    Matrix *trans = mat_create_matrix(cols, rows, false);
     int i, j;
     for (i=0; i<rows; i++) {
         for (j=0; j<cols; j++) {
@@ -270,6 +270,7 @@ static void sub_ref(Matrix *mat, int start_row, int start_col) {
     int row = start_row;
     int col = start_col;
     while (col<cols) {
+        row = start_row;
         while (row<rows) {
             element = mat_get_element(mat, row, col);
             if (element != 0) {
@@ -285,13 +286,16 @@ static void sub_ref(Matrix *mat, int start_row, int start_col) {
     if (val)
         return;
 
+    // (row, col) is now pivot;
     // row operations to creat a pivot of 1 and zeros below pivot
     mat_row_op2(mat, row, 1.0/element);
     mat_row_op1(mat, start_row, row);
+
     row = row+1;
     while (row<rows) {
         double k = -mat_get_element(mat, row, col);
         mat_row_op3(mat, row, start_row, k);
+        row = row+1;
     }
     // recursive call on submatrix down-right from pivot
     sub_ref(mat, start_row+1, col+1);
@@ -312,6 +316,7 @@ static void sub_rref(Matrix *mat, int start_row, int start_col) {
     int row = start_row;
     int col = start_col;
     while (col<cols) {
+        row = start_row;
         while (row<rows) {
             element = mat_get_element(mat, row, col);
             if (element != 0) {
@@ -329,10 +334,11 @@ static void sub_rref(Matrix *mat, int start_row, int start_col) {
 
     // now (row, col) is the pivot
     int prev_row = row-1;
-    element = -mat_get_element(mat, prev_row, col);
     while (0<=prev_row) {
+        element = -mat_get_element(mat, prev_row, col);
         if (element != 0)
             mat_row_op3(mat, prev_row, row, element);
+        prev_row = prev_row-1;
     }
 
     row = row+1;
