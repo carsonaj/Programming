@@ -9,7 +9,7 @@
 
 
 // data structure
-Matrix *mat_create_matrix(int rows, int cols, bool zeros) {
+Matrix *mat_create_matrix(int rows, int cols) {
     Matrix *mat = malloc(sizeof(Matrix));
     mat->rows = rows;
     mat->cols = cols;
@@ -17,19 +17,22 @@ Matrix *mat_create_matrix(int rows, int cols, bool zeros) {
     int length = rows*cols;
     mat->data = malloc(length*sizeof(double));
 
-    if (zeros == true) {
-        int i;
-        for (i=0; i<length; i=i+1) {
-            mat->data[i] = 0.0;
-        }
-    }
-
     return mat;
 }
 
 void mat_delete_matrix(Matrix *mat) {
     free(mat->data);
     free(mat);
+}
+
+Matrix *mat_zeros(int rows, int cols) {
+    Matrix *mat = mat_create_matrix(rows, cols);
+    int i;
+    for (i=0; i<rows*cols; i++) {
+        mat->data[i] = 0.0;
+    }
+
+    return mat;
 }
 
 double mat_get_element(Matrix *mat, int row, int col) {
@@ -42,7 +45,7 @@ void mat_set_element(Matrix *mat, int row, int col, double element) {
 
 Matrix *mat_get_rows(Matrix *mat, int rows, int *rows_arr) {
     int cols = mat->cols;
-    Matrix *row_mat = mat_create_matrix(rows, cols, false);
+    Matrix *row_mat = mat_create_matrix(rows, cols);
 
     int i, j;
     for (i=0; i<rows; i++) {
@@ -57,7 +60,7 @@ Matrix *mat_get_rows(Matrix *mat, int rows, int *rows_arr) {
 
 Matrix *mat_get_cols(Matrix *mat, int cols, int *cols_arr) {
     int rows = mat->rows;
-    Matrix *col_mat = mat_create_matrix(rows, cols, false);
+    Matrix *col_mat = mat_create_matrix(rows, cols);
 
     int i, j;
     for (j=0; j<cols; j++) {
@@ -68,6 +71,52 @@ Matrix *mat_get_cols(Matrix *mat, int cols, int *cols_arr) {
     }
 
     return col_mat;
+}
+
+Matrix *mat_join(Matrix *A, Matrix *B, int axis) {
+    // axis = 0 means vertical join
+    // axis = 1 means horizontal join
+    int m = A->rows;
+    int n = A->cols;
+    int r = B->rows;
+    int s = B->cols;
+
+    Matrix *join;
+    if (axis==0) {
+        assert(n==s);
+        join = mat_create_matrix(m+r, n);
+        int i, j;
+        for (j=0; j<n; j++) {
+            for (i=0; i<m; i++) {
+                double elementA = mat_get_element(A, i, j);
+                mat_set_element(join, i, j, elementA);
+            }
+
+            for (i=0; i<r; i++) {
+                double elementB = mat_get_element(B, i, j);
+                mat_set_element(join, i+m, j, elementB);
+            }
+        }
+    }
+
+    else if (axis==1) {
+        assert(m==r);
+        join = mat_create_matrix(m, n+s);
+        int i, j;
+        for (i=0; i<m; i++) {
+            for (j=0; j<n; j++) {
+                double elementA = mat_get_element(A, i, j);
+                mat_set_element(join, i, j, elementA);
+            }
+
+            for (j=0; j<s; j++) {
+                double elementB = mat_get_element(B, i, j);
+                mat_set_element(join, i, j+n, elementB);
+            }
+        }
+    }
+
+    return join;
 }
 
 void mat_print_matrix(Matrix *mat) {
@@ -87,7 +136,7 @@ void mat_print_matrix(Matrix *mat) {
 Matrix *mat_copy_matrix(Matrix *mat) {
     int rows = mat->rows;
     int cols = mat->cols;
-    Matrix *cpy = mat_create_matrix(rows, cols, false);
+    Matrix *cpy = mat_create_matrix(rows, cols);
     int i, j;
     for (i=0; i<rows; i++) {
         for (j=0; j<cols; j++) {
@@ -166,7 +215,7 @@ Matrix *mat_product(Matrix *A, Matrix *B) {
     n = A->cols;
     p = B->cols;
 
-    Matrix *mat = mat_create_matrix(m, p, false);
+    Matrix *mat = mat_create_matrix(m, p);
     int i,j;
     for (i=0; i<m; i=i+1) {
         for (j=0; j<p; j=j+1) {
@@ -193,7 +242,7 @@ Matrix *mat_had_product(Matrix *A, Matrix *B) {
     int rows = A->rows;
     int cols = A->cols;
 
-    Matrix *prod = mat_create_matrix(rows, cols, false);
+    Matrix *prod = mat_create_matrix(rows, cols);
     int i, j;
     for (i=0; i<rows; i++) {
         for (j=0; j<cols; j++) {
@@ -208,7 +257,7 @@ Matrix *mat_had_product(Matrix *A, Matrix *B) {
 Matrix *mat_scalar_poduct(double c, Matrix *mat) {
     int rows = mat->rows;
     int cols = mat->cols;
-    Matrix *prod = mat_create_matrix(rows, cols, false);
+    Matrix *prod = mat_create_matrix(rows, cols);
 
     int i, j;
     for (i=0; i<rows; i++) {
@@ -224,10 +273,10 @@ Matrix *mat_scalar_poduct(double c, Matrix *mat) {
 Matrix *mat_sum(Matrix *A, Matrix *B) {
     assert(A->rows == B->rows);
     assert(A->cols == B->cols);
-    int m = A->cols;
-    int n = B->cols;
+    int m = A->rows;
+    int n = A->cols;
 
-    Matrix *mat = mat_create_matrix(m, n, false);
+    Matrix *mat = mat_create_matrix(m, n);
     int i,j;
     for (i=0; i<m; i=i+1) {
         for (j=0; j<n; j=j+1) {
@@ -243,7 +292,7 @@ Matrix *mat_transpose(Matrix *mat) {
     int rows = mat->rows;
     int cols = mat->cols;
 
-    Matrix *trans = mat_create_matrix(cols, rows, false);
+    Matrix *trans = mat_create_matrix(cols, rows);
     int i, j;
     for (i=0; i<rows; i++) {
         for (j=0; j<cols; j++) {
@@ -349,4 +398,21 @@ static void sub_rref(Matrix *mat, int start_row, int start_col) {
 void mat_rref(Matrix *mat) {
     mat_ref(mat);
     sub_rref(mat, 0, 0);
+}
+
+// solve system Ax=b
+Matrix *mat_solve_system(Matrix *A, Matrix *b) {
+    int m = A->rows;
+    int n = A->cols;
+    int l = b->rows;
+    assert(m==n);
+    assert(m==l);
+
+    Matrix *xsol = mat_join(A, b, 1);
+    mat_rref(xsol);
+    int cols_arr[1] = {m};
+    Matrix *x = mat_get_cols(xsol, 1, cols_arr);
+    mat_delete_matrix(xsol);
+
+    return x;
 }

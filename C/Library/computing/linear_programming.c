@@ -111,26 +111,15 @@ Matrix *nonbasic_cost_trans(Matrix *c_trans, int m, int *indices) {
 int entering_col(Matrix *B, Matrix *N, Matrix *cb_trans, Matrix *cn_trans) {
     int m = B->rows;
     int n = (N->cols)+m;
-    Matrix *ysol = mat_create_matrix(m, m+1, false);
-    Matrix *y_trans = mat_create_matrix(1, m, false);
-    int i, j;
-    for (i=0; i<m; i++) {
-        for (j=0; j<m; j++) {
-            double element = mat_get_element(B, j, i);
-            mat_set_element(ysol, i, j, element);
-        }
-    }
-    for (i=0; i<m; i++) {
-        double element = mat_get_element(cb_trans, 0, i);
-        mat_set_element(ysol, i, m, element);
-    }
 
-    mat_rref(ysol);
-    for (i=0; i<m; i++) {
-        double element = mat_get_element(ysol, i, m);
-        mat_set_element(y_trans, 0, i, element);
-    }
-    mat_delete_matrix(ysol);
+    Matrix *cb = mat_transpose(cb_trans);
+    Matrix *B_trans = mat_transpose(B);
+    Matrix *y = mat_solve_system(B_trans, cb);
+    Matrix *y_trans = mat_transpose(y);
+
+    mat_delete_matrix(cb);
+    mat_delete_matrix(B_trans);
+    mat_delete_matrix(y);
 
     Matrix *y_transN = mat_product(y_trans, N);
     Matrix *minus_cn_trans = mat_scalar_poduct(-1.0, cn_trans);
@@ -141,6 +130,7 @@ int entering_col(Matrix *B, Matrix *N, Matrix *cb_trans, Matrix *cn_trans) {
     mat_delete_matrix(minus_cn_trans);
 
     int val = 0;
+    int i;
     i = 0;
     while (i<n-m) {
         if (mat_get_element(zn_trans, 0, i) < 0) {
@@ -158,53 +148,31 @@ int entering_col(Matrix *B, Matrix *N, Matrix *cb_trans, Matrix *cn_trans) {
 }
 
 // returns leaving column and updates xb
-int leaving_col(Matrix *B, Matrix *N, Matrix *xb, int *indices, int e) {
+int leaving_col(Matrix *B, Matrix *N, Matrix *xb, int e) {
     int m = B->rows;
     int cols_arr[1] = {e};
     Matrix *Ae = mat_get_cols(N, 1, cols_arr);
-    Matrix *dsol = mat_create_matrix(m, m+1, false);
+    Matrix *d = mat_solve_system(B, Ae);
 
-    int i, j;
-    for (i=0; i<m; i++) {
-        for (j=0; j<m; j++) {
-            double element = mat_get_element(B, i, j);
-            mat_set_element(dsol, i, j, element);
-        }
-    }
-    for (i=0; i<m; i++) {
-        double element = mat_get_element(Ae, i, 0);
-        mat_set_element(dsol, i, m, element);
-    }
-
-//-------------------------------------------------
-    mat_print_matrix(dsol);
-    mat_rref(dsol);
-    printf("ok\n");
-    Matrix *d = mat_create_matrix(m, 1, false);
-    printf("ok\n");
-    for (i=0; i<m; i++) {
-        double element = mat_get_element(dsol, i, m);
-        mat_set_element(d, i, 0, element);
-    }
-    printf("ok\n");
-
-    mat_delete_matrix(dsol);
     double t;
     double vals[m];
+    int i;
+    int j;
     for (i=0; i<m; i++) {
         double elm_xb = mat_get_element(xb, i, 0);
         double elm_d = mat_get_element(d, i, 0);
-        if (elm_xb == 0)
-            t = 0;
+        if (elm_xb == 0) {
+            t = 0.0;
             mat_set_element(xb, i, 0, t);
             return i;
+        }
 
         if (elm_d != 0)
             vals[i] = elm_xb/elm_d;
         else
             vals[i] = -1.0;
     }
-    printf("ok\n" );
+
     double max = vals[0];
     for (i=0; i<m; i++) {
         if (vals[i] >= max)
@@ -280,26 +248,7 @@ Matrix *lp_simplex_method(Matrix *c, Matrix *A, Matrix *b) {
     int n = A->cols;
     assert(m<=n);
     if (m==n) {
-        Matrix *xsol = mat_create_matrix(m, m+1, false);
-        int i, j;
-        for (i=0; i<m; i++); {
-            for (j=0; j<m; j++) {
-                double element = mat_get_element(A, i, j);
-                mat_set_element(xsol, i, j, element);
-            }
-        }
-        for (i=0; i<m; i++) {
-            double element = mat_get_element(b, i, 0);
-            mat_set_element(xsol, i, m, element);
-        }
-
-        mat_rref(xsol);
-        Matrix *x = mat_create_matrix(m, 1, false);
-        for (i=0; i<m; i++) {
-            double element = mat_get_element(xsol, i, m);
-            mat_set_element(x, i, 0, element);
-        }
-        mat_delete_matrix(xsol);
+        Matrix *x = mat_solve_system(A, b);
         return x;
     }
 
@@ -312,31 +261,11 @@ Matrix *lp_simplex_method(Matrix *c, Matrix *A, Matrix *b) {
         Matrix *cb_trans = basic_cost_trans(c_trans, m, indices);
         Matrix *cn_trans = nonbasic_cost_trans(c_trans, m, indices);
         mat_delete_matrix(c_trans);
-
-        Matrix *xbsol = mat_create_matrix(m, m+1, false);
-        int i, j;
-        for (i=0; i<m; i++); {
-            for (j=0; j<m; j++) {
-                double element = mat_get_element(B, i, j);
-                mat_set_element(xbsol, i, j, element);
-            }
-        }
-        for (i=0; i<m; i++) {
-            double element = mat_get_element(b, i, 0);
-            mat_set_element(xbsol, i, m, element);
-        }
-
-        mat_rref(xbsol);
-        Matrix *xb = mat_create_matrix(m, 1, false);
-        for (i=0; i<m; i++) {
-            double element = mat_get_element(xbsol, i, m);
-            mat_set_element(xb, i, 0, element);
-        }
-        mat_delete_matrix(xbsol);
-
+        Matrix *xb = mat_solve_system(B, b);
         int val = alg(B, N, cb_trans, cn_trans, xb, indices);
         assert(val==1);
-        Matrix *x = mat_create_matrix(n, 1, true);
+        Matrix *x = mat_zeros(n, 1);
+        int i;
         for (i=0; i<m; i++) {
             double element = mat_get_element(xb, i, 0);
             mat_set_element(x, indices[i], 0, element);
