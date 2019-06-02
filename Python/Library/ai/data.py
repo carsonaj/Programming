@@ -5,16 +5,19 @@ from torch.utils.data.dataset import Dataset
 
 class Train_Set(Dataset):
 
-    def __init__(self, file_path):
-        """This is for use with data that comes in a csv, not images.
-        The csv must have first column as labels and when data is retrieved,
-        it is retrieved as a tensor. When labels are retrieved, they are retrieved
-        as one hot encoded tensors"""
+    def __init__(self, train_data, train_labels):
+        """When labels are retrieved, they are retrieved
+        as one hot encoded tensorsself.
 
-        self.train_df = pd.read_csv(file_path)
-        self.data_arr = self.train_df.iloc[:,1:].values
-        self.label_arr = self.train_df.iloc[:,0].values
-        self.enc_label_arr = pd.get_dummies(self.train_df.iloc[:,0]).values
+        train_data: pandas DataFrame of train data
+        train_labels: pandas DataFrame of train labels
+        """
+
+        self.train_data = train_data
+        self.train_labels = train_labels
+        self.data_arr = self.train_data.values
+        self.label_arr = self.train_labels.values
+        self.enc_label_arr = pd.get_dummies(self.train_labels).values
 
     def __getitem__(self, index):
         sample = torch.Tensor(self.data_arr[index])
@@ -26,17 +29,19 @@ class Train_Set(Dataset):
         return len(self.data_arr)
 
 class Test_Set(Dataset):
-    """This is for use with data that comes in a csv, not images.
-    The csv must have first column as labels and when data is retrieved,
-    it is retrieved as a tensor. When labels are retrieved, they are retrieved
-    as one hot encoded tensors"""
+    """When labels are retrieved, they are retrieved
+    as one hot encoded tensors
 
-    def __init__(self, file_path):
+    test_data: pandas DataFrame of test data
+    test_labels: pandas DataFrame of test labels"""
 
-        self.test_df = pd.read_csv(file_path)
-        self.data_arr = self.test_df.iloc[:,1:].values
-        self.label_arr = self.test_df.iloc[:,0].values
-        self.enc_label_arr = pd.get_dummies(self.test_df.iloc[:,0]).values
+    def __init__(self, test_data, test_labels):
+
+        self.test_data = test_data
+        self.test_labels = test_labels
+        self.data_arr = self.test_data.values
+        self.label_arr = self.test_labels.values
+        self.enc_label_arr = pd.get_dummies(self.test_labels).values
 
     def __getitem__(self, index):
         sample = torch.Tensor(self.data_arr[index])

@@ -185,7 +185,7 @@ int main() {
     printf("%" PRId64 "\n", cnt_factorial(20, 13));
 
 
-    Polynomial *leg = ply_legendre(15);
+    Polynomial *leg = ply_legendre(14);
     printf("12th leg poly is ");
     ply_print_poly(leg);
 
