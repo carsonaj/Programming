@@ -132,65 +132,30 @@ int main() {
 
     // polynomial test
 
-    int max(int a, int b) {
-        if (a>b)
-            return a;
-        else
-            return b;
-    }
-    double coefs1_arr[5] = {1,3,-2,7,-1};
-    double coefs2_arr[6] = {-1,-3,2,-7,1,-4};
+/*
+    double coef1[5] = {0,1,2, 2,5};
+    double coef2[9] = {0,0,0, 10,5,4, 0,0,1};
 
     Polynomial *p1 = ply_create_poly(4);
-    Polynomial *p2 = ply_create_poly(5);
 
     int i;
-    for (i=0; i<=4; i++) {
-        ply_set_coef(p1, i, coefs1_arr[i]);
+    for (i=0;i<=4;i++) {
+        ply_set_coef(p1, i, coef1[i]);
     }
-    for (i=0; i<=5; i++) {
-        ply_set_coef(p2, i, coefs2_arr[i]);
-    }
+
+    Polynomial *p2 = ply_scale(1.0/2, p1);
 
     ply_print_poly(p1);
-
     ply_print_poly(p2);
-
-    Polynomial *sum_poly = ply_sum(p1, p2);
-    ply_print_poly(sum_poly);
-
-    Polynomial *prod_poly = ply_product(p1, p2);
-    ply_print_poly(prod_poly);
-    printf("\n\n\n" );
-
-    //Polynomial *prod_deriv2nd = ply_differentiate(prod_poly, 2);
-    //printf("2nd deriv is \n");ply_print_poly(prod_deriv2nd);
-
-
-    Polynomial *p = ply_create_poly(20);
-    for (i=0; i<=20; i++) {
-        ply_set_coef(p, i, 1);
-    }
-    ply_print_poly(p);
-    printf("\n\n\n" );
-
-
-    for (i=1; i<=9; i++) {
-        Polynomial *q = ply_differentiate(p, i);
-        ply_print_poly(q);
-        printf("\n\n" );
-    }
-
-
-    printf("%" PRId64 "\n", cnt_factorial(20, 13));
-
-
-    Polynomial *leg = ply_legendre(14);
-    printf("12th leg poly is ");
-    ply_print_poly(leg);
-
+*/
 
     //(1.0/pow(2.0, n))*(1.0/cnt_factorial(n, 1))*pow(-1.0, exp)*cnt_combination(n, k);
+
+
+    Polynomial *leg50 = ply_legendre(50);
+    printf("\n\n");
+
+    ply_print_poly(leg50);
 
 
     return 0;

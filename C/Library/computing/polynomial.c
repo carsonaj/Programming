@@ -55,24 +55,43 @@ void ply_print_poly(Polynomial *poly) {
     int deg = poly->deg;
     double coef0 = ply_get_coef(poly, 0);
     double coefn = ply_get_coef(poly, deg);
-    if (deg!=0)
+    if (deg!=0) {
         assert(coefn!=0);
-    int i;
-    if (coef0!=0)
-        printf("%.2f ", coef0);
-    for (i=1; i<deg; i++) {
-        double coef = ply_get_coef(poly, i);
-        if (coef>0) {
-            printf("+ %.2fx^%d ", coef, i);
+        int k;
+        int i;
+        for (i=0; i<=deg; i++) {
+            double coef = ply_get_coef(poly, i);
+            if (coef != 0) {
+                k = i;
+                break;
+            }
         }
-        else if (coef<0)
-            printf("- %.2fx^%d ", -coef, i);
-    }
-    if (coefn>0)
-        printf("+ %.2fx^%d\n", coefn, deg);
-    else
-        printf("- %.2fx^%d\n", -coefn, deg);
 
+        if (k<deg) {
+            double coef = ply_get_coef(poly, k);
+            printf("%.2fx^%d ", coef, k);
+            for (i=k+1; i<=deg-1; i++) {
+                double coef = ply_get_coef(poly, i);
+                if (coef>0) {
+                    printf("+ %.2fx^%d ", coef, i);
+                }
+                else if (coef<0)
+                    printf("- %.2fx^%d ", -coef, i);
+                }
+            if (coefn>0)
+                printf("+ %.2fx^%d\n", coefn, deg);
+            else
+                printf("- %.2fx^%d\n", -coefn, deg);
+        }
+
+        else if (k==deg) {
+            printf("%.3fx^%d\n", coefn, deg);
+        }
+    }
+
+    else if (deg==0) {
+        printf("%.2f\n", coef0);
+    }
 }
 //----------------------------------------------------------------------------
 
@@ -99,6 +118,12 @@ double ply_evaluate(Polynomial *poly, double x) {
 }
 
 // algebra
+
+Polynomial *ply_zero() {
+    Polynomial *z = ply_create_poly(0);
+    z->coefs[0] = 0.0;
+    return z;
+    }
 
 Polynomial *ply_sum(Polynomial *poly1, Polynomial *poly2) {
     Polynomial *p1 = max_deg(poly1, poly2);
@@ -155,8 +180,26 @@ Polynomial *ply_product(Polynomial *poly1, Polynomial *poly2) {
     return prod_poly;
 }
 
+Polynomial *ply_scale(double s, Polynomial *p) {
+    if (s==0) {
+        Polynomial *z = ply_zero();
+        return z;
+    }
+    else if (s!=0) {
+        int n = p->deg;
+        Polynomial *sp = ply_create_poly(n);
+
+        int i;
+        for(i=0; i<=n; i++) {
+            double coef = ply_get_coef(p, i);
+            ply_set_coef(sp, i, s*coef);
+        }
+
+        return sp;
+    }
+}
+
 // analysis
-//********************
 Polynomial *ply_differentiate(Polynomial *poly, int n) {
     int deg = poly->deg;
     if (deg<n) {
@@ -192,24 +235,41 @@ Polynomial *ply_differentiate(Polynomial *poly, int n) {
 
 // families of polynomials
 
-// Legendre (Rodriguez)
-//***********************8
+// Standard Basis
+Polynomial *ply_monomial(int n) {
+    Polynomial *p = ply_create_poly(n);
+    int i;
+    for (i=0; i<=n-1; i++) {
+        ply_set_coef(p, i, 0.0);
+    }
+    ply_set_coef(p, n, 1.0);
+    return p;
+}
+
+// Legendre (Recursive)
 Polynomial *ply_legendre(int n) {
-    Polynomial *p = ply_create_poly(2*n);
-    int k;
-    for (k=0; k<=2*n; k++) {
-        if (k%2==0) {
-            int exp = (n-k/2)%2;
-            double coef = (1.0/pow(2.0, n))*(1.0/cnt_factorial(n, 1))*pow(-1.0, exp)*cnt_combination(n, k/2);
-            ply_set_coef(p, k, coef);
-        }
-        else if (k%2==1) {
-            ply_set_coef(p, k, 0.0);
-        }
+    Polynomial *p0 = ply_monomial(0);
+    Polynomial *p1 = ply_monomial(1);
+
+    Polynomial *poly_list[n];
+    poly_list[0] = p0;
+    poly_list[1] = p1;
+
+
+    int i;
+    for (i=1; i<=n-1; i++) {
+        Polynomial *left = ply_scale(2*i+1, ply_product(p1, poly_list[i]));
+        Polynomial *right = ply_scale(-i, poly_list[i-1]);
+        Polynomial *p = ply_scale(1.0/(i+1), ply_sum(right, left));
+        poly_list[i+1] = p;
+
+        ply_delete_poly(left);
+        ply_delete_poly(right);
     }
 
-    Polynomial *q = ply_differentiate(p, n);
-    ply_delete_poly(p);
+    for(i=0; i<=n-1; i++) {
+        ply_delete_poly(poly_list[i]);
+    }
 
-    return q;
+    return poly_list[n];
 }
